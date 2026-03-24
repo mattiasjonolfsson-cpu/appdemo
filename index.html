@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AppDemo" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>AppDemo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Syne+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131f;
+      --border: rgba(140, 80, 255, 0.18);
+      --accent: #a855f7;
+      --accent2: #e879f9;
+      --text: #f0eaff;
+      --muted: #7c6fa0;
+      --glow: rgba(168, 85, 247, 0.35);
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    /* Ambient background */
+    .ambient {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.25;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .orb1 { width: 340px; height: 340px; background: #7c3aed; top: -80px; left: -80px; animation-delay: 0s; }
+    .orb2 { width: 260px; height: 260px; background: #c026d3; bottom: 40px; right: -60px; animation-delay: -5s; }
+    .orb3 { width: 180px; height: 180px; background: #2563eb; bottom: 160px; left: 10%; animation-delay: -8s; }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.1); }
+    }
+
+    /* Top bar */
+    .topbar {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 10px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo-hex {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #7c3aed, #c026d3);
+      clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 800; color: white;
+    }
+    .logo-name { font-size: 18px; font-weight: 800; letter-spacing: 0.04em; }
+    .logo-name span { color: var(--accent); }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #22d3ee;
+      box-shadow: 0 0 8px #22d3ee;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+    /* Main scroll area */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px 16px 24px;
+      position: relative; z-index: 5;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hero card */
+    .hero {
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(192,38,211,0.1));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .hero-label {
+      font-family: 'Syne Mono', monospace;
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    .hero h1 em { font-style: normal; color: var(--accent2); }
+    .hero p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* Section title */
+    .section-title {
+      font-size: 11px;
+      font-family: 'Syne Mono', monospace;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 20px 0 12px;
+    }
+
+    /* Stat row */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-lbl {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-family: 'Syne Mono', monospace;
+    }
+
+    /* Feature cards */
+    .features { animation: fadeUp 0.6s 0.2s ease both; }
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: pointer;
+    }
+    .feat-card:active { transform: scale(0.97); border-color: var(--accent); }
+    .feat-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .feat-icon.purple { background: rgba(124,58,237,0.2); }
+    .feat-icon.pink   { background: rgba(192,38,211,0.2); }
+    .feat-icon.blue   { background: rgba(37,99,235,0.2); }
+    .feat-icon.teal   { background: rgba(20,184,166,0.2); }
+    .feat-body h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .feat-body p  { font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .feat-arrow   { margin-left: auto; color: var(--muted); font-size: 18px; flex-shrink: 0; }
+
+    /* Install banner */
+    .install-banner {
+      background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(232,121,249,0.1));
+      border: 1px solid rgba(168,85,247,0.4);
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 20px;
+      display: none;
+      animation: fadeUp 0.4s ease both;
+    }
+    .install-banner.visible { display: block; }
+    .install-banner h3 { font-size: 14px; font-weight: 800; margin-bottom: 6px; }
+    .install-banner p  { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+    .btn-install {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      box-shadow: 0 4px 20px var(--glow);
+    }
+
+    /* iOS install hint */
+    .ios-hint {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 20px;
+      display: none;
+    }
+    .ios-hint.visible { display: block; }
+    .ios-hint h3 { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+    .ios-steps { list-style: none; }
+    .ios-steps li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 12px; color: var(--muted); padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .ios-steps li:last-child { border: none; }
+    .step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(168,85,247,0.2);
+      color: var(--accent);
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-family: 'Syne Mono', monospace;
+    }
+
+    /* Bottom nav */
+    .bottomnav {
+      position: relative; z-index: 10;
+      display: flex;
+      background: rgba(19, 19, 31, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 4px; cursor: pointer; padding: 4px;
+      transition: color 0.2s;
+      color: var(--muted);
+    }
+    .nav-item.active { color: var(--accent); }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-lbl { font-size: 10px; font-family: 'Syne Mono', monospace; letter-spacing: 0.05em; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-hex">A</div>
+    <div class="logo-name">App<span>Demo</span></div>
+  </div>
+  <div class="status-dot"></div>
+</div>
+
+<div class="main">
+  <div class="hero">
+    <div class="hero-label">// version 1.0.0</div>
+    <h1>Din app är<br><em>installerad.</em></h1>
+    <p>Byggd med Claude. Fungerar offline. Kör direkt från hemskärmen som en riktig app.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card"><div class="stat-val">PWA</div><div class="stat-lbl">Typ</div></div>
+    <div class="stat-card"><div class="stat-val">100%</div><div class="stat-lbl">Offline</div></div>
+    <div class="stat-card"><div class="stat-val">v1</div><div class="stat-lbl">Version</div></div>
+  </div>
+
+  <div class="section-title">// funktioner</div>
+  <div class="features">
+    <div class="feat-card">
+      <div class="feat-icon purple">⚡</div>
+      <div class="feat-body">
+        <h3>Blixtsnabb</h3>
+        <p>Cachas lokalt, startar omedelbart</p>
+      </div>
+      <div class="feat-arrow">›</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon pink">📵</div>
+      <div class="feat-body">
+        <h3>Offline-stöd</h3>
+        <p>Fungerar utan internetanslutning</p>
+      </div>
+      <div class="feat-arrow">›</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon blue">📲</div>
+      <div class="feat-body">
+        <h3>Hemskärm</h3>
+        <p>Installeras som en native app</p>
+      </div>
+      <div class="feat-arrow">›</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon teal">🎨</div>
+      <div class="feat-body">
+        <h3>Stilren design</h3>
+        <p>Mörkt tema, anpassad för mobil</p>
+      </div>
+      <div class="feat-arrow">›</div>
+    </div>
+  </div>
+
+  <!-- Android install prompt -->
+  <div class="install-banner" id="installBanner">
+    <h3>📲 Installera AppDemo</h3>
+    <p>Lägg till på hemskärmen för snabb åtkomst – precis som en riktigt app.</p>
+    <button class="btn-install" id="installBtn">Installera nu</button>
+  </div>
+
+  <!-- iOS instructions -->
+  <div class="ios-hint" id="iosHint">
+    <h3>📲 Installera på iPhone/iPad</h3>
+    <ol class="ios-steps">
+      <li><span class="step-num">1</span><span>Tryck på <strong>Dela</strong>-ikonen (fyrkant med pil upp) i Safari</span></li>
+      <li><span class="step-num">2</span><span>Scrolla ned och välj <strong>"Lägg till på hemskärmen"</strong></span></li>
+      <li><span class="step-num">3</span><span>Tryck på <strong>Lägg till</strong> – klart!</span></li>
+    </ol>
+  </div>
+</div>
+
+<nav class="bottomnav">
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    <span class="nav-lbl">Hem</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+    <span class="nav-lbl">Signal</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span class="nav-lbl">Appar</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+    <span class="nav-lbl">Profil</span>
+  </div>
+</nav>
+
+<script>
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+
+  // Detect iOS
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandaloneMode = window.navigator.standalone;
+
+  if (isIOS && !isInStandaloneMode) {
+    document.getElementById('iosHint').classList.add('visible');
+  }
+
+  // Android install prompt
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBanner').classList.add('visible');
+  });
+
+  document.getElementById('installBtn')?.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    if (outcome === 'accepted') {
+      document.getElementById('installBanner').style.display = 'none';
+    }
+  });
+
+  // Nav interaction
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
